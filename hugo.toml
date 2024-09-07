@@ -1,0 +1,38 @@
+baseURL = 'https://blog.shun-k.dev/'
+languageCode = 'en-us'
+title = "Shun Kashiwa's Blog"
+
+[module]
+[[module.imports]]
+path = "github.com/hugo-sid/hugo-blog-awesome"
+
+
+[params.author]
+avatar = "avatar.jpg"
+intro = "Shun Kashiwa's Blog"
+name = "Shun Kashiwa"
+# description = "x"
+
+[params]
+siteName = "Shun Kashiwa's Blog"
+defaultColor = "auto"
+dateFormat = ":date_long"        # date format used to show dates on various pages. If nothing is specified, then "2 Jan 2006" format is used.
+
+
+[[menu.main]]
+pageRef = "posts"
+name = 'Posts'
+url = '/posts/'
+weight = 20
+
+[[params.socialIcons]]
+name = "github"
+url = "https://github.com/hugo-sid"
+
+[[params.socialIcons]]
+name = "twitter"
+url = "https://twitter.com/shun_kashiwa"
+
+[[params.socialIcons]]
+name = "Rss"
+url = "index.xml"
