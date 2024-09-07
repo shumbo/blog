@@ -1,7 +1,7 @@
 +++
 title = 'Union Types in Rust with Type-Level Lists'
 date = 2024-09-06T22:37:50-07:00
-draft = true
+draft = false
 +++
 
 In this article, I will discuss a technique to represent union types in Rust. With type-level lists, we can express a set of types, and through trait resolution, determine if a particular type is part of a set or if one set is a subset of another.
