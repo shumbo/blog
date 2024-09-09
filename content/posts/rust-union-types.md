@@ -351,6 +351,49 @@ To do something meaningful with `HList` as values (the argument of `render_multi
 
 When specifying trait bounds with `where`, multiple bounds can be specified, and type parameters can appear on the right-hand side. By leveraging this feature, we can even determine whether two collections are equal by checking subset relations in both directions.
 
+## Why are you doing this?
+
+Before concluding, I want to share another example of how this technique can be useful (this is also the reason I started exploring this technique).
+
+I have used the described technique for ChoRus: a Rust library for choreographic programming. In choreographic programming, instead of writing separate programs for each node of a distributed system, we write a single program (called a choreography) that describes the global behavior of the system. This choreography is then projected into local programs for each node through a process called _endpoint projection_.
+
+In choreographies, some data is located at specific nodes, and we need to ensure that the data is accessed only by the nodes that own it. ChoRus represent nodes (or "locations") as types that implement the `ChoreographyLocation` trait. For example, we can define two locations, Alice and Bob, as follows:
+
+```rust
+#[derive(ChoreographyLocation)]
+struct Alice;
+
+#[derive(ChoreographyLocation)]
+struct Bob;
+```
+
+ChoRus defines the `Located` type to associate a value with a location. For example, `Located<i32, Alice>` represents an integer located at Alice. Using `PhantomData`, `Located<i32, Alice>` and `Located<i32, Bob>` are distinct types, and the compiler will raise a type error if we try to access data at the wrong location.
+
+When writing a choreography, we have a set of locations that are involved in the choreography. We want to ensure that all locations in the choreography are valid locations. ChoRus uses the `Member` trait to check if a location is a member of the set of locations involved in the choreography.
+
+```rust
+struct TestChoreography;
+impl Choreography for TestChoreography {
+    // `L` is the set of locations involved in the choreography
+    type L = LocationSet!(Alice, Bob);
+    fn run(self, op: &impl ChoreoOp<Self::L>) {
+        // Run a local computation at Alice.
+        // This type-checks because Alice is a member of `L`
+        op.locally(Alice, |_| {
+            println!("Hello, World!");
+        });
+        // This doesn't type-check because Charlie is not a member of `L`
+        op.locally(Charlie, |_| {
+            println!("Hello, World!");
+        });
+    }
+}
+```
+
+In order to execute a choreography, we need to provide a mechanism for each location to be able to communicate with other locations. In ChoRus, the `Transport` trait is used to define how messages are sent between locations. To ensure all locations in the choreography can communicate with each other, ChoRus uses the `Subset` trait to check if the set of locations involved in the choreography is a subset of the set of locations supported by the transport.
+
+For more details, please refer to the [ChoRus repository](https://github.com/lsd-ucsc/ChoRus) and the [documentation](https://lsd-ucsc.github.io/ChoRus/introduction.html)!
+
 ## Conclusion
 
 In this article, we saw how to represent type collections similar to Union Types using Rust's trait resolution. By using type-level lists, we can represent collections of types, and through trait resolution, we can check whether a particular type is part of a collection or whether one collection is a subset of another. With the `Index` trick, we can perform recursive operations on type-level lists, enabling various operations such as subset checking and equality checking. This technique can be useful and gives us more expressive power in Rust and gives us opportunities to design type-safe APIs or DSLs.
